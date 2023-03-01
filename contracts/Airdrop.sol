@@ -15,6 +15,8 @@ contract Airdrop {
     // 每个地址固定空投token数量
     uint256 public amount;
 
+    mapping (address => bool) public isWithdrawed;
+
     event WithdrawAirdrop(address account, uint256 amount);
 
     constructor(address _mingToken, bytes32 _merkleRoot, uint256 _amount) {
@@ -26,8 +28,9 @@ contract Airdrop {
     function withdrawAirdrop(bytes32[] calldata proof) external {
         bool inWhitelist = checkInWhitelist(proof,msg.sender, amount);
         require(inWhitelist, "Error:Not in the whitelist");
-
+        require(!isWithdrawed[msg.sender], "Error: Withdrawed");
         mingToken.safeTransfer(msg.sender, amount);
+        isWithdrawed[msg.sender] = true;
         emit WithdrawAirdrop(msg.sender, amount);
     }
 

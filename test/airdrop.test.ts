@@ -72,5 +72,21 @@ describe("test airdrop", () => {
 
 			expect(airdrop.withdrawAirdrop(proof)).to.be.rejectedWith("Error:Not in the whitelist");
 		})
+
+		it("test repeat withdraw", async () => {
+			const { amount, accounts, merkleTree, airdrop } = await loadFixture(deployContract);
+
+			const leaf = keccak256(encodeLeaf(accounts[0].address, amount));
+			const proof = merkleTree.getHexProof(leaf);
+
+			const verified = await airdrop.checkInWhitelist(proof, accounts[0].address, amount);
+			expect(verified).to.be.equal(true);
+
+			const tx = await airdrop.withdrawAirdrop(proof);
+			await tx.wait();
+
+			// await airdrop.withdrawAirdrop(proof)
+			expect(airdrop.withdrawAirdrop(proof)).to.be.rejectedWith("Error: Withdrawed");
+		})
 	})
 })
